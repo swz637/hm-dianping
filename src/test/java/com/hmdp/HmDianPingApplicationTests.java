@@ -48,6 +48,7 @@ class HmDianPingApplicationTests {
 
     @Autowired
     private IDWorker idWorker;
+
     private final ExecutorService executor = Executors.newFixedThreadPool(500);
 
     @Test
