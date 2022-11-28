@@ -60,8 +60,16 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if (!isLocked) {
             return Result.fail("年轻人~太快了可不好！");
         }
-        IVoucherOrderService iVoucherService = (IVoucherOrderService) AopContext.currentProxy();
-        return iVoucherService.checkAndOder(voucherId);
+        Result result = null;
+        try {
+            IVoucherOrderService iVoucherService = (IVoucherOrderService) AopContext.currentProxy();
+            result = iVoucherService.checkAndOder(voucherId);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            redisLock.unlock();
+        }
+        return result;
     }
 
     @Transactional
