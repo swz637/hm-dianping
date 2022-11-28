@@ -37,7 +37,9 @@ class HmDianPingApplicationTests {
     @Test
     public void testSaveShop() {
 
-        shopService.saveShopToRedis(1L, 10L);
+        shopService.saveShopToRedis(2L, 10L);
+        shopService.saveShopToRedis(3L, 10L);
+        shopService.saveShopToRedis(4L, 10L);
     }
 
     @Test
