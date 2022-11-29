@@ -13,6 +13,16 @@ public class RedisConstants {
 
     public static final String LOCK_SHOP_KEY = "lock:shop:";
     public static final Long LOCK_SHOP_TTL = 10L;
+    /**
+    *优惠券订单的redisson的key
+    */
+    public static final String LOCK_ODER_KEY = "lock:order:";
+    /**
+     *优惠券订单的redisson的key的过期时间
+     */
+    public static final Long LOCK_ODER_TTL = 10L;
+
+
 
     public static final String SECKILL_STOCK_KEY = "seckill:stock:";
     public static final String BLOG_LIKED_KEY = "blog:liked:";

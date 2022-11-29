@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static com.hmdp.utils.RedisConstants.*;
@@ -52,7 +51,7 @@ public class CacheClient {
         RedisData<Object> redisData = new RedisData<>();
         redisData.setExpireTime(LocalDateTime.now().plusSeconds(timeout.getSeconds()));
         redisData.setData(value);
-        log.info("将传入对象封装成->"+ redisData);
+        //log.info("将传入对象封装成->"+ redisData);
 
         redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(redisData));
     }
@@ -92,7 +91,9 @@ public class CacheClient {
         this.set(key, r, timeout);
         return r;
     }
-    private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(5);
+    //private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(5);
+    private static final ExecutorService CACHE_REBUILD_EXECUTOR = new ThreadPoolExecutor(3,5,
+            2, TimeUnit.MINUTES,new LinkedBlockingDeque<>(5));
 
     /** 使用逻辑过期解决缓存击穿，在当查询到的数据逻辑过期后，尝试获取锁后，开启新的线程完成缓存的重建，本线程返回旧的数据
      * @param keyPrefix key的前缀

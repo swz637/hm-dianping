@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.utils.IDWorker;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
+
+import static com.hmdp.utils.RedisConstants.LOCK_ODER_KEY;
 
 /**
  * <p>
@@ -38,10 +43,14 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Autowired
     private IDWorker idWorker;
 
+    @Autowired
+    private RedissonClient redissonClient;
+
     @Override
     public Result seckillVoucher(Long voucherId) {
 
-        //查询秒杀券的信息
+        //从数据库查询秒杀券的信息
+        // TODO: 2022/11/29 将查询到的优惠券放入redis，先缓存预热，再使用逻辑过期解决
         SeckillVoucher seckillVoucher = seckillVoucherService.getById(voucherId);
         //判断是否在秒杀时间段内
         if (seckillVoucher.getBeginTime().isAfter(LocalDateTime.now())) {
@@ -55,8 +64,19 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足！");
         }
         Long userId = UserHolder.getUser().getId();
-        SimpleRedisLock redisLock = new SimpleRedisLock("order:" + userId, redisTemplate);
-        boolean isLocked = redisLock.tryLock(1500L);
+        /*SimpleRedisLock redisLock = new SimpleRedisLock("order:" + userId, redisTemplate);
+        boolean isLocked = redisLock.tryLock(1500L);*/
+        //使用Redisson获取可重入锁
+        RLock rLock = redissonClient.getLock(LOCK_ODER_KEY + userId);
+        boolean isLocked = false;
+
+        try {
+            isLocked = rLock.tryLock(-1,30, TimeUnit.SECONDS);
+            //isLocked = rLock.tryLock();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         if (!isLocked) {
             return Result.fail("年轻人~太快了可不好！");
         }
@@ -67,7 +87,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         } finally {
-            redisLock.unlock();
+            rLock.unlock();
         }
         return result;
     }
