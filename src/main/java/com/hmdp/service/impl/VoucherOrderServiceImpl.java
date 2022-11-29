@@ -55,7 +55,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足！");
         }
         Long userId = UserHolder.getUser().getId();
-        SimpleRedisLock redisLock = new SimpleRedisLock("order" + userId, redisTemplate);
+        SimpleRedisLock redisLock = new SimpleRedisLock("order:" + userId, redisTemplate);
         boolean isLocked = redisLock.tryLock(1500L);
         if (!isLocked) {
             return Result.fail("年轻人~太快了可不好！");
