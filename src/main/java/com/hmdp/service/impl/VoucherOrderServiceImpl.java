@@ -7,6 +7,7 @@ import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.utils.CacheClient;
 import com.hmdp.utils.IDWorker;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
@@ -18,10 +19,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import static com.hmdp.utils.RedisConstants.LOCK_ODER_KEY;
+import static com.hmdp.utils.RedisConstants.*;
 
 /**
  * <p>
@@ -46,12 +48,19 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Autowired
     private RedissonClient redissonClient;
 
+    @Autowired
+    private CacheClient cacheClient;
+
     @Override
     public Result seckillVoucher(Long voucherId) {
 
         //从数据库查询秒杀券的信息
-        // TODO: 2022/11/29 将查询到的优惠券放入redis，先缓存预热，再使用逻辑过期解决
-        SeckillVoucher seckillVoucher = seckillVoucherService.getById(voucherId);
+        // 将查询到的优惠券放入redis，先缓存预热，再使用逻辑过期解决
+        SeckillVoucher seckillVoucher = cacheClient.queryWithLogicalExpire(CACHE_SECKILL_VOUCHER_KEY, voucherId, SeckillVoucher.class,
+                seckillVoucherService::getById, Duration.ofDays(CACHE_SECKILL_VOUCHER_KEY_TTL));
+
+        //没使用缓存：SeckillVoucher seckillVoucher = seckillVoucherService.getById(voucherId);
+
         //判断是否在秒杀时间段内
         if (seckillVoucher.getBeginTime().isAfter(LocalDateTime.now())) {
             //否，返回错误信息
@@ -64,18 +73,13 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足！");
         }
         Long userId = UserHolder.getUser().getId();
-        /*SimpleRedisLock redisLock = new SimpleRedisLock("order:" + userId, redisTemplate);
+        /*自己实现的简易版锁SimpleRedisLock redisLock = new SimpleRedisLock("order:" + userId, redisTemplate);
         boolean isLocked = redisLock.tryLock(1500L);*/
-        //使用Redisson获取可重入锁
+        //使用Redisson获取可重入锁，每个用户来获取的锁都是不同的锁，防止浪费
         RLock rLock = redissonClient.getLock(LOCK_ODER_KEY + userId);
         boolean isLocked = false;
 
-        try {
-            isLocked = rLock.tryLock(-1,30, TimeUnit.SECONDS);
-            //isLocked = rLock.tryLock();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        isLocked = rLock.tryLock();
 
         if (!isLocked) {
             return Result.fail("年轻人~太快了可不好！");
@@ -98,6 +102,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
         Long userId = UserHolder.getUser().getId();
         //判断用户是否已经抢购过该优惠券
+        // TODO: 2022/11/29 当一个用户恶意反复秒杀，还是可能对数据库造成压力
+        //缓解方案：给user_id，voucher_id建立联合索引
         Integer count = query().eq("user_id", userId).eq("voucher_id", voucherId).count();
         if (count != 0) {
             //已经抢购过

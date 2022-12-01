@@ -11,8 +11,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * @author: lsq637
  * @since: 2022-11-15 16:34:12
- * @describe: todo 为什么拦截器没有生效，在点击进入“我的”的时候会直接跳转到登录页？
- * 没生效就ThreadLocal没有user信息，在查询的时候会出错
+ * @describe:
+ * 为什么拦截器没有生效，在点击进入“我的”的时候会直接跳转到登录页？
+ * 解答：没生效就ThreadLocal没有user信息，在查询的时候会出错
  *
  */
 @Configuration

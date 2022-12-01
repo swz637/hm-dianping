@@ -31,7 +31,8 @@ public class IDWorker {
         long timeStamp = nowEpochSecond - START_TIMESTAMP;
         String date = now.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
         //通过redis自增获得后面32位的序列号
-        // TODO: 2022/11/26 此处的count会在redis中永久存在，怎么解决？ 应该过一天就进行持久化保存到硬盘？
+        // TODO: 2022/11/26 此处的count会在redis中永久存在，怎么解决？ 应该过一天就进行持久化保存到硬盘？方便以后根据key统计当天订单
+        // TODO: 2022/11/29 redis怎么持久化？
         Long count = redisTemplate.opsForValue().increment("icr:" + keyPrefix + ":" + date, 1L);
 
         //通过位运算将时间戳向左位移32位，空出的32位使用或运算将count填充

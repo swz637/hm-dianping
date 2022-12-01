@@ -10,7 +10,14 @@ public class RedisConstants {
 
     public static final Long CACHE_SHOP_TTL = 30L;
     public static final String CACHE_SHOP_KEY = "cache:shop:";
-
+    /**
+    *秒杀券的缓存key
+    */
+    public static final String CACHE_SECKILL_VOUCHER_KEY = "cache:secKillVoucher:";
+    /**
+    *秒杀券的缓存过期时间，1天
+    */
+    public static final Long CACHE_SECKILL_VOUCHER_KEY_TTL = 1L;
     public static final String LOCK_SHOP_KEY = "lock:shop:";
     public static final Long LOCK_SHOP_TTL = 10L;
     /**

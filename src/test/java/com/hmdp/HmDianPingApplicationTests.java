@@ -3,6 +3,7 @@ package com.hmdp;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.CreditCodeUtil;
 import com.hmdp.service.IShopService;
+import com.hmdp.service.impl.SeckillVoucherServiceImpl;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.IDWorker;
 import org.junit.jupiter.api.Test;
@@ -28,18 +29,34 @@ class HmDianPingApplicationTests {
     @Autowired
     ShopServiceImpl shopService;
 
+    @Autowired
+    SeckillVoucherServiceImpl seckillVoucherService;
+
     public void setUp() throws Exception {
 
         System.out.println("dsaf");
 
     }
 
+    /**
+     * 预热redis添加店铺信息
+     */
     @Test
     public void testSaveShop() {
 
         shopService.saveShopToRedis(2L, 10L);
         shopService.saveShopToRedis(3L, 10L);
         shopService.saveShopToRedis(4L, 10L);
+    }
+
+    /**
+     * 预热redis，添加秒杀券的信息
+     */
+    @Test
+    public void testSaveSeckillVouchers() {
+
+        seckillVoucherService.saveVouchers(2L, Duration.ofDays(1L));
+
     }
 
     @Test
