@@ -24,12 +24,12 @@ public class SimpleRedisLock implements ILock {
     private final String KEY_PREFIX = "lock:";
     private final String ID_PREFIX = UUID.randomUUID().toString(true) + "-";
 
-    private static final DefaultRedisScript<Integer> SCRIPT;
+    private static final DefaultRedisScript<Long> SCRIPT;
 
     static {
         SCRIPT = new DefaultRedisScript<>();
         SCRIPT.setLocation(new ClassPathResource("threadId.lua"));
-        SCRIPT.setResultType(Integer.class);
+        SCRIPT.setResultType(Long.class);
     }
 
 

@@ -55,7 +55,7 @@ class HmDianPingApplicationTests {
     @Test
     public void testSaveSeckillVouchers() {
 
-        seckillVoucherService.saveVouchers(2L, Duration.ofDays(1L));
+        seckillVoucherService.saveVouchers(18L, Duration.ofDays(1L));
 
     }
 

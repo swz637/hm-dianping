@@ -3,10 +3,10 @@
 --- Created by 637.
 --- DateTime: 2022/11/28 15:51
 ---
-local id = redis.call("get",keys[1])
+local id = redis.call("get",KEYS[1])
 --比较线程标识与锁中的标识是否一致
 if (id == argv[1]) then
     --是，删除锁
-    return redis.call("del",keys[1])
+    return redis.call("del",KEYS[1])
 end
 return 0

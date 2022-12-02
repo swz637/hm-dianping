@@ -22,10 +22,15 @@ public interface IVoucherOrderService extends IService<VoucherOrder> {
      */
     Result seckillVoucher(Long voucherId);
 
-    /**
-     * 验证用户是否第一次下单，是则完成下单，否则返回错误信息，保证一人只能下一单
-     * @param voucherId 优惠券id
-     * @return 秒杀结果
+    ///**
+    // * 验证用户是否第一次下单，是则完成下单，否则返回错误信息，保证一人只能下一单
+    // * @param voucherId 优惠券id
+    // * @return 秒杀结果
+    // */
+    //Result checkAndOder(Long voucherId);
+
+    /** 将传入的voucherOrder对象写入到数据库
+     * @param voucherOrder 传入要写入数据库的订单对象
      */
-    Result checkAndOder(Long voucherId);
+    void checkAndOder(VoucherOrder voucherOrder);
 }
