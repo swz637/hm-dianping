@@ -23,10 +23,12 @@ public class MvcConfig implements WebMvcConfigurer {
     private StringRedisTemplate redisTemplate;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        //不拦截的路径
+        // 2022/12/3 不拦截的路径，会不会执行自定义的拦截器，会不会将用户信息保存到ThreadLocal？答：不会
         registry.addInterceptor(new LoginInterceptor(redisTemplate)).excludePathPatterns(
                 "/user/code",
                 "/user/login",
-                "/blog/hot",
+                //"/blog/hot",//也拦截查询热门笔记的请求，在拦截器中特殊处理
                 "/upload/**",
                 "/shop-type/**",
                 "/voucher/**",

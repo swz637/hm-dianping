@@ -3,6 +3,8 @@ local voucherId = ARGV[1]
 --下单用户的id
 --ARGV必须要大写
 local userId = ARGV[2]
+--订单id
+local oderId = ARGV[3]
 
 local stockKey = "seckill:stock:" .. voucherId
 local oderKey = "seckill:order:" .. voucherId
@@ -22,5 +24,7 @@ end
 --否，扣库存，将用户添加到，对应的订单表
 redis.call("incrby", stockKey, -1)
 redis.call("sadd", oderKey, userId)
+--将优惠券订单信息放入redis的stream消息队列
+redis.call("xadd", "stream.orders", "*", "voucherId", voucherId, "userId", userId, "id", oderId)
 --返回0
 return 0

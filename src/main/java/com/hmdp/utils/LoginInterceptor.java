@@ -38,6 +38,10 @@ public class LoginInterceptor implements HandlerInterceptor {
         Map<Object, Object> userMap = redisTemplate.opsForHash().entries(LOGIN_USER_KEY + token);
         //不存在，拦截
         if (userMap.isEmpty()) {
+            if (request.getRequestURI().contains("blog/hot")){
+                //如果未登录，但是请求是查询热门笔记的也放行
+                return true;
+            }
             //返回错误状态码，表示未授权
             response.setStatus(401);
             return false;

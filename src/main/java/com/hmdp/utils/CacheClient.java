@@ -41,9 +41,11 @@ public class CacheClient {
         redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(value), timeout);
     }
 
-    /**传入一个对象，将其封装成带有逻辑过期字段的一个新的对象，并存入redis
-     * @param key 键
-     * @param value 要封装的对象
+    /**
+     * 传入一个对象，将其封装成带有逻辑过期字段的一个新的对象，并存入redis
+     *
+     * @param key     键
+     * @param value   要封装的对象
      * @param timeout 逻辑过期时间
      */
     public void setWithLogical(String key, Object value, Duration timeout) {
@@ -56,15 +58,17 @@ public class CacheClient {
         redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(redisData));
     }
 
-    /**存入空字符串解决缓存穿透
-     * @param keyPrefix key的前缀
-     * @param id 要查询的对象的id
-     * @param type 要查询对象的类型
+    /**
+     * 存入空字符串解决缓存穿透
+     *
+     * @param keyPrefix  key的前缀
+     * @param id         要查询的对象的id
+     * @param type       要查询对象的类型
      * @param dbFallBack 查询该对象的数据库逻辑
-     * @param timeout 缓存重建时要设置的逻辑过期时间
-     * @param <R> 返回值泛型
-     * @param <ID> id的泛型，ID类型不确定
-     * @return  R
+     * @param timeout    缓存重建时要设置的逻辑过期时间
+     * @param <R>        返回值泛型
+     * @param <ID>       id的泛型，ID类型不确定
+     * @return R
      */
     public <R, ID> R queryWithPassThrough(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallBack, Duration timeout) {
 
@@ -91,29 +95,33 @@ public class CacheClient {
         this.set(key, r, timeout);
         return r;
     }
-    //private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(5);
-    private static final ExecutorService CACHE_REBUILD_EXECUTOR = new ThreadPoolExecutor(3,5,
-            2, TimeUnit.MINUTES,new LinkedBlockingDeque<>(5));
 
-    /** 使用逻辑过期解决缓存击穿，在当查询到的数据逻辑过期后，尝试获取锁后，开启新的线程完成缓存的重建，本线程返回旧的数据
-     * @param keyPrefix key的前缀
-     * @param id 要查询的对象的id
-     * @param type 要查询对象的类型
+    //private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(5);
+    private static final ExecutorService CACHE_REBUILD_EXECUTOR = new ThreadPoolExecutor(3, 5,
+            2, TimeUnit.MINUTES, new LinkedBlockingDeque<>(5));
+
+    /**
+     * 使用逻辑过期解决缓存击穿，在当查询到的数据逻辑过期后，尝试获取锁后，开启新的线程完成缓存的重建，本线程返回旧的数据
+     *
+     * @param keyPrefix  key的前缀
+     * @param id         要查询的对象的id
+     * @param type       要查询对象的类型
      * @param dbFallBack 查询该对象的数据库逻辑
-     * @param timeout 缓存重建时要设置的逻辑过期时间
-     * @param <R> 返回值泛型
-     * @param <ID> id的泛型，ID类型不确定
-     * @return  R
+     * @param timeout    缓存重建时要设置的逻辑过期时间
+     * @param <R>        返回值泛型
+     * @param <ID>       id的泛型，ID类型不确定
+     * @return R
      */
-    public <R, ID> R queryWithLogicalExpire(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallBack, Duration timeout){
+    public <R, ID> R queryWithLogicalExpire(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallBack, Duration timeout) {
+
         String key = keyPrefix + id;
         //从redis中获取数据
         String redisDataStr = redisTemplate.opsForValue().get(key);
         RedisData redisData = JSONUtil.toBean(redisDataStr, RedisData.class);
         LocalDateTime expireTime = redisData.getExpireTime();
-        JSONObject data = (JSONObject)redisData.getData();
+        JSONObject data = (JSONObject) redisData.getData();
         R r = data.toBean(type);
-        if (expireTime.isAfter(LocalDateTime.now())){
+        if (expireTime.isAfter(LocalDateTime.now())) {
             //未过期
             return r;
         }
@@ -127,11 +135,11 @@ public class CacheClient {
         }
         //获取锁成功，开始重建缓存
         //开启线程
-        CACHE_REBUILD_EXECUTOR.submit(()->{
+        CACHE_REBUILD_EXECUTOR.submit(() -> {
             try {
                 //重建缓存
-               R r1 = dbFallBack.apply(id);
-               this.setWithLogical(key, r,timeout);
+                R r1 = dbFallBack.apply(id);
+                this.setWithLogical(key, r, timeout);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
@@ -142,8 +150,10 @@ public class CacheClient {
         return r;
     }
 
-    /** 使用redis的setnx命令实现互斥锁
-     * @param key
+    /**
+     * 使用redis的setnx命令实现互斥锁
+     *
+     * @param key 锁的名称
      * @return 获取锁成功时返回true
      */
     public boolean tryLock(String key) {
@@ -152,14 +162,15 @@ public class CacheClient {
         return BooleanUtil.isTrue(aBoolean);
     }
 
-    /** 释放锁
-     * @param key
+    /**
+     * 释放锁
+     *
+     * @param key 锁的名称
      */
     public void unLock(String key) {
 
         redisTemplate.delete(key);
     }
-
 
 
 }

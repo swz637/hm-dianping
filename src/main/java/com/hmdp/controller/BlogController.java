@@ -29,8 +29,6 @@ public class BlogController {
 
     @Resource
     private IBlogService blogService;
-    @Resource
-    private IUserService userService;
 
     @PostMapping
     public Result saveBlog(@RequestBody Blog blog) {
@@ -46,9 +44,9 @@ public class BlogController {
     @PutMapping("/like/{id}")
     public Result likeBlog(@PathVariable("id") Long id) {
         // 修改点赞数量
-        blogService.update()
-                .setSql("liked = liked + 1").eq("id", id).update();
-        return Result.ok();
+        //blogService.update()
+        //        .setSql("liked = liked + 1").eq("id", id).update();
+        return blogService.likeBlog(id);
     }
 
     @GetMapping("/of/me")
@@ -65,19 +63,15 @@ public class BlogController {
 
     @GetMapping("/hot")
     public Result queryHotBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
-        // 根据用户查询
-        Page<Blog> page = blogService.query()
-                .orderByDesc("liked")
-                .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
-        // 获取当前页数据
-        List<Blog> records = page.getRecords();
-        // 查询用户
-        records.forEach(blog ->{
-            Long userId = blog.getUserId();
-            User user = userService.getById(userId);
-            blog.setName(user.getNickName());
-            blog.setIcon(user.getIcon());
-        });
-        return Result.ok(records);
+
+        // TODO: 2022/12/3 用户点完赞后点进笔记详情页，后返回(再次发送blog/hot请求时)，会走浏览器的缓存，
+        //  导致显示的赞还是自己点完赞之前的点赞数，刷新后能正确显示
+        return blogService.queryHotBlog(current);
+    }
+
+    @GetMapping("/{id}")
+    public Result queryBlog(@PathVariable("id") Long blogId){
+
+       return blogService.queryById(blogId);
     }
 }

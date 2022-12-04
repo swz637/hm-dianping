@@ -75,6 +75,11 @@ public class Blog implements Serializable {
      * 点赞数量
      */
     private Integer liked;
+    /**
+     * 本用户对本博客，是否点赞过
+     */
+    @TableField(exist = false)
+    private boolean isLiked;
 
     /**
      * 评论数量

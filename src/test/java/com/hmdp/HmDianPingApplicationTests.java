@@ -2,6 +2,7 @@ package com.hmdp;
 
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.CreditCodeUtil;
+import com.hmdp.entity.Blog;
 import com.hmdp.service.IShopService;
 import com.hmdp.service.impl.SeckillVoucherServiceImpl;
 import com.hmdp.service.impl.ShopServiceImpl;
@@ -94,6 +95,13 @@ class HmDianPingApplicationTests {
         latch.await();
         long end = System.currentTimeMillis();
         System.out.println("总耗时：" + (end - start));
+    }
+
+    @Test
+    public void testBlog(){
+
+        Blog blog = new Blog();
+        Blog blog1 = blog.setId(1L);
     }
 
 }
