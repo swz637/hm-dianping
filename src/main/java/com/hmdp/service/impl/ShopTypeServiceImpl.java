@@ -33,7 +33,7 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
     private StringRedisTemplate redisTemplate;
 
     @Override
-    public Result queryAllWithCash() {
+    public Result queryAllWithCache() {
 
         List<ShopType> shopTypeList = new ArrayList<>();
         //1.在redis缓存里面查询

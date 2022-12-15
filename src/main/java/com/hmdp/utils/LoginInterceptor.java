@@ -34,7 +34,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //校验用户是否存在
-        String token = request.getHeader("authorization");
+        String token = request.getHeader(SystemConstants.TOKEN_KEY);
         Map<Object, Object> userMap = redisTemplate.opsForHash().entries(LOGIN_USER_KEY + token);
         //不存在，拦截
         if (userMap.isEmpty()) {

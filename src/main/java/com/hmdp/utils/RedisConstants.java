@@ -36,6 +36,7 @@ public class RedisConstants {
     public static final String FEED_KEY = "feed:";
     public static final String SHOP_GEO_KEY = "shop:geo:";
     public static final String USER_SIGN_KEY = "sign:";
+    public static final String USER_FOLLOWS_KEY = "follows:";
 
     public static final String SHOP_TYPE_LIST_KEY = "cache:shops";
     public static final Long SHOP_TYPE_LIST_TTL = 60L;

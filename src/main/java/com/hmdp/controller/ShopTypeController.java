@@ -29,6 +29,6 @@ public class ShopTypeController {
     public Result queryTypeList() {
         //List<ShopType> typeList = typeService
         //        .query().orderByAsc("sort").list();
-        return typeService.queryAllWithCash();
+        return typeService.queryAllWithCache();
     }
 }

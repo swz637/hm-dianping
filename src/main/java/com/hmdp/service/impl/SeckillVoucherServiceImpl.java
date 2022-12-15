@@ -24,11 +24,12 @@ public class SeckillVoucherServiceImpl extends ServiceImpl<SeckillVoucherMapper,
 
     @Autowired
     private CacheClient cacheClient;
+
     @Override
     public void saveVouchers(long voucherId, Duration duration) {
 
         SeckillVoucher seckillVoucher = getById(voucherId);
 
-        cacheClient.setWithLogical(RedisConstants.CACHE_SECKILL_VOUCHER_KEY + voucherId,seckillVoucher,duration);
+        cacheClient.setWithLogical(RedisConstants.CACHE_SECKILL_VOUCHER_KEY + voucherId, seckillVoucher, duration);
     }
 }

@@ -38,6 +38,4 @@ public class IDWorker {
         //通过位运算将时间戳向左位移32位，空出的32位使用或运算将count填充
         return timeStamp << COUNT_BITS | count;
     }
-
-
 }

@@ -32,4 +32,10 @@ public interface IBlogService extends IService<Blog> {
      * @return 结果
      */
     Result likeBlog(Long id);
+
+    Result queryBlogLikes(Long id);
+
+    Result queryFollowedBlog(Long maxScore, int offset);
+
+    Result saveBlog(Blog blog);
 }
